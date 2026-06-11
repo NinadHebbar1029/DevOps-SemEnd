@@ -1,13 +1,16 @@
-import sys
 import os
+import traceback
 
-# Add src to sys path so modules can be imported correctly
-sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
-
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from src.predict import predict_emotion
+try:
+    from fastapi import FastAPI
+    from fastapi.middleware.cors import CORSMiddleware
+    from pydantic import BaseModel
+    from src.predict import predict_emotion
+except Exception as e:
+    print("================ IMPORT ERROR ================")
+    traceback.print_exc()
+    print("==============================================")
+    raise
 
 app = FastAPI(title="MindEase API")
 

@@ -1,7 +1,14 @@
 import os
 import joblib
+import traceback
 
-from preprocess import clean_text
+try:
+    from src.preprocess import clean_text
+except Exception as e:
+    print("================ ERROR IMPORTING PREPROCESS ================")
+    traceback.print_exc()
+    print("============================================================")
+    raise
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -9,15 +16,19 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # LOAD TRAINED FILES
 # =========================================================
 
-model = joblib.load(os.path.join(BASE_DIR, "models", "best_model.pkl"))
-
-vectorizer = joblib.load(
-    os.path.join(BASE_DIR, "models", "vectorizer.pkl")
-)
-
-label_encoder = joblib.load(
-    os.path.join(BASE_DIR, "models", "label_encoder.pkl")
-)
+try:
+    model = joblib.load(os.path.join(BASE_DIR, "models", "best_model.pkl"))
+    vectorizer = joblib.load(
+        os.path.join(BASE_DIR, "models", "vectorizer.pkl")
+    )
+    label_encoder = joblib.load(
+        os.path.join(BASE_DIR, "models", "label_encoder.pkl")
+    )
+except Exception as e:
+    print("================ ERROR LOADING MODELS ================")
+    traceback.print_exc()
+    print("======================================================")
+    raise
 
 
 # =========================================================
@@ -47,8 +58,7 @@ def predict_emotion(text):
 # TEST
 # =========================================================
 
-sample_text = "I feel happy today"
-
-result = predict_emotion(sample_text)
-
-print("Predicted Emotion:", result)
+if __name__ == "__main__":
+    sample_text = "I feel happy today"
+    result = predict_emotion(sample_text)
+    print("Predicted Emotion:", result)
