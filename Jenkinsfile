@@ -7,30 +7,24 @@ pipeline {
         DOCKER_HUB_REPO = 'ninadhebbar1029/devops-semend'
         
         // =========================================================================
-        // SECURITY HACK FOR UNI PROJECT:
-        // We split the tokens into two strings ("str1" + "str2").
-        // If we don't do this, GitHub and Vercel's automated security scanners 
-        // will instantly detect the tokens when you git push and permanently revoke 
-        // them, which will immediately break your pipeline!
+        // SECURE CREDENTIALS SETUP
+        // We are now safely fetching the tokens you created in the Jenkins UI!
         // =========================================================================
         
-        DOCKER_USER = 'ninadhebbar1029'
-        DOCKER_PASS = 'dckr_pat_' + 'Pr34jg6jvx_vCP0CDzAtrE9jDfw'
+        // This automatically creates DOCKER_CREDS_USR and DOCKER_CREDS_PSW
+        DOCKER_CREDS = credentials('DockerhubToken')
         
         SONAR_PROJECT_KEY = 'mindease-chatbot'
-        SONAR_TOKEN = 'sqa_0a2dbdc159a0c0' + '5a3dd7c59b14b6d834454f0b70'
+        SONAR_TOKEN = credentials('SonarToken')
         
-        VERCEL_TOKEN = 'vcp_34TxHOxIyA1J45efmJO' + 'kW0rEUirqcTFtX7v0fKP9qAMAlN8sHx3IkvA0'
-        VERCEL_ORG_ID = 'ninads-projects' // You may need to change this to your actual Vercel org/username if it fails
+        VERCEL_TOKEN = credentials('VercelToken')
+        VERCEL_ORG_ID = 'ninads-projects' // Change to your actual org if needed
         VERCEL_PROJECT_ID = 'mindease-frontend'
         
-        GITHUB_TOKEN = 'github_pat_11BN3SMYA0EElIB82LNjx5_' + 'iseVfCNLl8bU9qudfAGwvDnZT5AikQhcfOiLQwqBqFqUK5ZZBWCB349noO1'
+        GITHUB_TOKEN = credentials('GithubToken')
         
-        // Render Deploy Hook 
-        // We removed the credentials() binding because it was crashing the pipeline.
-        // Paste your actual Render deploy hook URL below:
+        // Keep your Render hook placeholder
         RENDER_DEPLOY_HOOK = 'https://api.render.com/deploy/srv-placeholder'
-
     }
 
     options {
@@ -60,7 +54,6 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo 'Running SonarQube analysis...'
-                // Using the hardcoded Sonar Token directly
                 bat """
                     docker run --rm -v "%CD%:/usr/src" sonarsource/sonar-scanner-cli ^
                       -Dsonar.host.url=http://host.docker.internal:9000 ^
@@ -86,10 +79,10 @@ pipeline {
                     steps {
                         echo 'Building frontend image...'
                         bat """
-                            docker build \
-                              --build-arg VITE_API_URL=http://localhost:8000 \
-                              -t ${DOCKER_HUB_REPO}:frontend-${env.BUILD_NUMBER} \
-                              -t ${DOCKER_HUB_REPO}:frontend-latest \
+                            docker build ^
+                              --build-arg VITE_API_URL=http://localhost:8000 ^
+                              -t ${DOCKER_HUB_REPO}:frontend-${env.BUILD_NUMBER} ^
+                              -t ${DOCKER_HUB_REPO}:frontend-latest ^
                               ./frontend
                         """
                     }
@@ -100,8 +93,7 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 echo 'Pushing images to Docker Hub...'
-                // Using the hardcoded Docker PAT
-                bat "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
+                bat "echo %DOCKER_CREDS_PSW% | docker login -u %DOCKER_CREDS_USR% --password-stdin"
                 
                 bat "docker push ${DOCKER_HUB_REPO}:backend-${env.BUILD_NUMBER}"
                 bat "docker push ${DOCKER_HUB_REPO}:backend-latest"
@@ -126,7 +118,6 @@ pipeline {
             steps {
                 echo 'Deploying to Vercel via CLI...'
                 dir('frontend') {
-                    // Using the hardcoded Vercel Token to deploy directly from Jenkins
                     bat "npx vercel pull --yes --environment=production --token=${VERCEL_TOKEN}"
                     bat "npx vercel build --prod --token=${VERCEL_TOKEN}"
                     bat "npx vercel deploy --prebuilt --prod --token=${VERCEL_TOKEN}"
