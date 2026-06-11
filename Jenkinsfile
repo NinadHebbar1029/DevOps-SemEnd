@@ -49,20 +49,10 @@ pipeline {
         }
 
         stage('Install Dependencies') {
-            parallel {
-                stage('Backend (pip)') {
-                    steps {
-                        echo 'Installing Python dependencies...'
-                        bat 'pip install --quiet -r requirements.txt'
-                    }
-                }
-                stage('Frontend (npm)') {
-                    steps {
-                        echo 'Installing Node dependencies...'
-                        dir('frontend') {
-                            bat 'npm ci --silent'
-                        }
-                    }
+            steps {
+                echo 'Installing Node dependencies for Vercel CLI...'
+                dir('frontend') {
+                    bat 'npm ci --silent'
                 }
             }
         }
