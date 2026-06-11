@@ -53,14 +53,14 @@ pipeline {
                 stage('Backend (pip)') {
                     steps {
                         echo 'Installing Python dependencies...'
-                        sh 'pip install --quiet -r requirements.txt'
+                        bat 'pip install --quiet -r requirements.txt'
                     }
                 }
                 stage('Frontend (npm)') {
                     steps {
                         echo 'Installing Node dependencies...'
                         dir('frontend') {
-                            sh 'npm ci --silent'
+                            bat 'npm ci --silent'
                         }
                     }
                 }
@@ -71,12 +71,12 @@ pipeline {
             steps {
                 echo 'Running SonarQube analysis...'
                 // Using the hardcoded Sonar Token directly
-                sh """
+                bat """
                     sonar-scanner \
                       -Dsonar.host.url=http://localhost:9000 \
                       -Dsonar.login=${SONAR_TOKEN} \
                       -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                      -Dsonar.projectName='MindEase Mental Health Chatbot' \
+                      -Dsonar.projectName="MindEase Mental Health Chatbot" \
                       -Dsonar.sources=api.py,src \
                       -Dsonar.exclusions=**/node_modules/**,data/**,models/**,reports/**,frontend/**,**/__pycache__/**,src/train_models.py,src/evaluate_models.py,src/roc_auc.py \
                       -Dsonar.python.version=3.11
@@ -89,13 +89,13 @@ pipeline {
                 stage('Build Backend') {
                     steps {
                         echo 'Building backend image...'
-                        sh "docker build -t ${DOCKER_HUB_REPO}:backend-${env.BUILD_NUMBER} -t ${DOCKER_HUB_REPO}:backend-latest ."
+                        bat "docker build -t ${DOCKER_HUB_REPO}:backend-${env.BUILD_NUMBER} -t ${DOCKER_HUB_REPO}:backend-latest ."
                     }
                 }
                 stage('Build Frontend') {
                     steps {
                         echo 'Building frontend image...'
-                        sh """
+                        bat """
                             docker build \
                               --build-arg VITE_API_URL=http://localhost:8000 \
                               -t ${DOCKER_HUB_REPO}:frontend-${env.BUILD_NUMBER} \
@@ -111,23 +111,23 @@ pipeline {
             steps {
                 echo 'Pushing images to Docker Hub...'
                 // Using the hardcoded Docker PAT
-                sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
+                bat "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
                 
-                sh "docker push ${DOCKER_HUB_REPO}:backend-${env.BUILD_NUMBER}"
-                sh "docker push ${DOCKER_HUB_REPO}:backend-latest"
+                bat "docker push ${DOCKER_HUB_REPO}:backend-${env.BUILD_NUMBER}"
+                bat "docker push ${DOCKER_HUB_REPO}:backend-latest"
                 
-                sh "docker push ${DOCKER_HUB_REPO}:frontend-${env.BUILD_NUMBER}"
-                sh "docker push ${DOCKER_HUB_REPO}:frontend-latest"
+                bat "docker push ${DOCKER_HUB_REPO}:frontend-${env.BUILD_NUMBER}"
+                bat "docker push ${DOCKER_HUB_REPO}:frontend-latest"
             }
         }
 
         stage('Deploy Backend → Render') {
             steps {
                 echo 'Triggering Render deploy...'
-                sh """
-                    curl -s -X POST "${RENDER_DEPLOY_HOOK}" \
-                      -o /dev/null \
-                      -w "HTTP Status: %{http_code}\\n" || true
+                bat """
+                    curl -s -X POST "${RENDER_DEPLOY_HOOK}" ^
+                      -o NUL ^
+                      -w "HTTP Status: %%{http_code}\\n" || exit 0
                 """
             }
         }
@@ -137,9 +137,9 @@ pipeline {
                 echo 'Deploying to Vercel via CLI...'
                 dir('frontend') {
                     // Using the hardcoded Vercel Token to deploy directly from Jenkins
-                    sh "npx vercel pull --yes --environment=production --token=${VERCEL_TOKEN}"
-                    sh "npx vercel build --prod --token=${VERCEL_TOKEN}"
-                    sh "npx vercel deploy --prebuilt --prod --token=${VERCEL_TOKEN}"
+                    bat "npx vercel pull --yes --environment=production --token=${VERCEL_TOKEN}"
+                    bat "npx vercel build --prod --token=${VERCEL_TOKEN}"
+                    bat "npx vercel deploy --prebuilt --prod --token=${VERCEL_TOKEN}"
                 }
             }
         }
@@ -155,7 +155,7 @@ pipeline {
         always {
             echo 'Cleaning workspace...'
             cleanWs()
-            sh "docker rmi ${DOCKER_HUB_REPO}:backend-${env.BUILD_NUMBER} ${DOCKER_HUB_REPO}:frontend-${env.BUILD_NUMBER} || true"
+            bat "docker rmi ${DOCKER_HUB_REPO}:backend-${env.BUILD_NUMBER} ${DOCKER_HUB_REPO}:frontend-${env.BUILD_NUMBER} || exit 0"
         }
     }
 }
