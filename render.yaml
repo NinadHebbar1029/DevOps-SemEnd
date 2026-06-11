@@ -21,4 +21,7 @@ services:
     dockerfilePath: ./Dockerfile # Looks for frontend/Dockerfile
     envVars:
       - key: VITE_API_URL
-        value: "https://mindease-backend.onrender.com" # Ensure frontend can talk to backend
+        fromService:
+          type: web
+          name: mindease-backend
+          envVarKey: RENDER_EXTERNAL_URL
