@@ -1,16 +1,20 @@
+import sys
 import os
-import traceback
 
-try:
-    from fastapi import FastAPI
-    from fastapi.middleware.cors import CORSMiddleware
-    from pydantic import BaseModel
-    from src.predict import predict_emotion
-except Exception as e:
-    print("================ IMPORT ERROR ================")
-    traceback.print_exc()
-    print("==============================================")
-    raise
+# Ensure the root directory is on the path regardless of working directory
+_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+if _ROOT_DIR not in sys.path:
+    sys.path.insert(0, _ROOT_DIR)
+
+# Ensure src/ is also on the path so submodules inside src/ can import each other
+_SRC_DIR = os.path.join(_ROOT_DIR, "src")
+if _SRC_DIR not in sys.path:
+    sys.path.insert(0, _SRC_DIR)
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from src.predict import predict_emotion
 
 app = FastAPI(title="MindEase API")
 

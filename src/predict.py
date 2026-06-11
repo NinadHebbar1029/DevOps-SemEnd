@@ -1,34 +1,31 @@
+import sys
 import os
+
+# Add the src/ directory itself to sys.path so sibling modules
+# (like preprocess.py) can be imported directly, regardless of
+# the working directory uvicorn is launched from.
+_SRC_DIR = os.path.dirname(os.path.abspath(__file__))
+if _SRC_DIR not in sys.path:
+    sys.path.insert(0, _SRC_DIR)
+
 import joblib
-import traceback
+from preprocess import clean_text
 
-try:
-    from src.preprocess import clean_text
-except Exception as e:
-    print("================ ERROR IMPORTING PREPROCESS ================")
-    traceback.print_exc()
-    print("============================================================")
-    raise
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_BASE_DIR = os.path.dirname(_SRC_DIR)  # parent of src/ == project root
 
 # =========================================================
 # LOAD TRAINED FILES
 # =========================================================
 
-try:
-    model = joblib.load(os.path.join(BASE_DIR, "models", "best_model.pkl"))
-    vectorizer = joblib.load(
-        os.path.join(BASE_DIR, "models", "vectorizer.pkl")
-    )
-    label_encoder = joblib.load(
-        os.path.join(BASE_DIR, "models", "label_encoder.pkl")
-    )
-except Exception as e:
-    print("================ ERROR LOADING MODELS ================")
-    traceback.print_exc()
-    print("======================================================")
-    raise
+model = joblib.load(os.path.join(_BASE_DIR, "models", "best_model.pkl"))
+
+vectorizer = joblib.load(
+    os.path.join(_BASE_DIR, "models", "vectorizer.pkl")
+)
+
+label_encoder = joblib.load(
+    os.path.join(_BASE_DIR, "models", "label_encoder.pkl")
+)
 
 
 # =========================================================
@@ -36,21 +33,10 @@ except Exception as e:
 # =========================================================
 
 def predict_emotion(text):
-
-    # CLEAN INPUT TEXT
     text = clean_text(text)
-
-    # CONVERT TO TF-IDF VECTOR
     vector = vectorizer.transform([text])
-
-    # PREDICT EMOTION
     prediction = model.predict(vector)
-
-    # CONVERT LABEL TO EMOTION NAME
-    emotion = label_encoder.inverse_transform(
-        prediction
-    )[0]
-
+    emotion = label_encoder.inverse_transform(prediction)[0]
     return emotion
 
 
