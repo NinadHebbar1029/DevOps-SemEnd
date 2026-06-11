@@ -62,13 +62,13 @@ pipeline {
                 echo 'Running SonarQube analysis...'
                 // Using the hardcoded Sonar Token directly
                 bat """
-                    sonar-scanner \
-                      -Dsonar.host.url=http://localhost:9000 \
-                      -Dsonar.login=${SONAR_TOKEN} \
-                      -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                      -Dsonar.projectName="MindEase Mental Health Chatbot" \
-                      -Dsonar.sources=api.py,src \
-                      -Dsonar.exclusions=**/node_modules/**,data/**,models/**,reports/**,frontend/**,**/__pycache__/**,src/train_models.py,src/evaluate_models.py,src/roc_auc.py \
+                    docker run --rm -v "%CD%:/usr/src" sonarsource/sonar-scanner-cli ^
+                      -Dsonar.host.url=http://host.docker.internal:9000 ^
+                      -Dsonar.login=${SONAR_TOKEN} ^
+                      -Dsonar.projectKey=${SONAR_PROJECT_KEY} ^
+                      -Dsonar.projectName="MindEase Mental Health Chatbot" ^
+                      -Dsonar.sources=api.py,src ^
+                      -Dsonar.exclusions=**/node_modules/**,data/**,models/**,reports/**,frontend/**,**/__pycache__/**,src/train_models.py,src/evaluate_models.py,src/roc_auc.py ^
                       -Dsonar.python.version=3.11
                 """
             }
