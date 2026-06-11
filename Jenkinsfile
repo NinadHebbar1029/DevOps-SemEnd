@@ -106,11 +106,7 @@ pipeline {
         stage('Deploy Frontend → Vercel') {
             steps {
                 echo 'Deploying to Vercel via CLI...'
-                dir('frontend') {
-                    bat 'npx vercel pull --yes --environment=production --token=%VERCEL_TOKEN%'
-                    bat 'npx vercel build --prod --token=%VERCEL_TOKEN%'
-                    bat 'npx vercel deploy --prebuilt --prod --token=%VERCEL_TOKEN%'
-                }
+                bat 'npx vercel deploy frontend --prod --yes --token=%VERCEL_TOKEN%'
             }
         }
     }
