@@ -1,14 +1,16 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
+# Install dependencies first (cached layer)
 COPY requirements.txt .
-
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copy application code and model files
+COPY api.py .
+COPY src/ ./src/
+COPY models/ ./models/
 
-# Expose the port for the FastAPI server
 EXPOSE 8000
 
 CMD uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000}
