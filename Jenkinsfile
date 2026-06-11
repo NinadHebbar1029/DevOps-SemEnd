@@ -18,8 +18,8 @@ pipeline {
         SONAR_TOKEN = credentials('SonarToken')
         
         VERCEL_TOKEN = credentials('VercelToken')
-        VERCEL_ORG_ID = 'ninads-projects' // Change to your actual org if needed
-        VERCEL_PROJECT_ID = 'mindease-frontend'
+        VERCEL_ORG_ID = 'ninadhebbar1029' 
+        VERCEL_PROJECT_ID = 'dev-ops-sem-end'
         
         GITHUB_TOKEN = credentials('GithubToken')
         
