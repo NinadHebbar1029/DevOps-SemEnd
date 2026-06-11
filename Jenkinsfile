@@ -52,19 +52,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo 'Running SonarQube analysis...'
-                bat """
-                    docker run --rm ^^
-                      -v "%CD%:/usr/src" ^^
-                      -e SONAR_TOKEN=%SONAR_TOKEN% ^^
-                      sonarsource/sonar-scanner-cli ^^
-                      -Dsonar.host.url=http://host.docker.internal:9000 ^^
-                      -Dsonar.token=%SONAR_TOKEN% ^^
-                      -Dsonar.projectKey=${SONAR_PROJECT_KEY} ^^
-                      -Dsonar.projectName="MindEase Mental Health Chatbot" ^^
-                      -Dsonar.sources=api.py,src ^^
-                      -Dsonar.exclusions=**/node_modules/**,data/**,models/**,reports/**,frontend/**,**/__pycache__/**,src/train_models.py,src/evaluate_models.py,src/roc_auc.py ^^
-                      -Dsonar.python.version=3.11
-                """
+                bat "docker run --rm -v \"%CD%:/usr/src\" -e SONAR_TOKEN=%SONAR_TOKEN% sonarsource/sonar-scanner-cli -Dsonar.host.url=http://host.docker.internal:9000 -Dsonar.token=%SONAR_TOKEN% -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sources=api.py,src -Dsonar.exclusions=**/node_modules/**,data/**,models/**,reports/**,frontend/**,**/__pycache__/**,src/train_models.py,src/evaluate_models.py,src/roc_auc.py -Dsonar.python.version=3.11"
             }
         }
 
