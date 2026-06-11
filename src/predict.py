@@ -1,20 +1,22 @@
+import os
 import joblib
 
 from preprocess import clean_text
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # =========================================================
 # LOAD TRAINED FILES
 # =========================================================
 
-model = joblib.load("models/best_model.pkl")
+model = joblib.load(os.path.join(BASE_DIR, "models", "best_model.pkl"))
 
 vectorizer = joblib.load(
-    "models/vectorizer.pkl"
+    os.path.join(BASE_DIR, "models", "vectorizer.pkl")
 )
 
 label_encoder = joblib.load(
-    "models/label_encoder.pkl"
+    os.path.join(BASE_DIR, "models", "label_encoder.pkl")
 )
 
 
