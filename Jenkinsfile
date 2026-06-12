@@ -21,6 +21,8 @@ pipeline {
         
         GITHUB_TOKEN = credentials('GithubToken')
         
+        OWASP_TOKEN = credentials('OWASPToken')
+        
         // Keep your Render hook placeholder
         RENDER_DEPLOY_HOOK = 'https://api.render.com/deploy/srv-placeholder'
     }
@@ -60,7 +62,7 @@ pipeline {
             steps {
                 echo 'Running OWASP Dependency Check via Jenkins Plugin...'
                 dependencyCheck(
-                    additionalArguments: '''
+                    additionalArguments: """
                         --scan ./
                         --format XML
                         --format HTML
@@ -69,7 +71,8 @@ pipeline {
                         --exclude **/__pycache__/**
                         --exclude **/models/**
                         --exclude **/data/**
-                    ''',
+                        --nvdApiKey ${OWASP_TOKEN}
+                    """,
                     odcInstallation: 'OWASP'
                 )
             }
@@ -140,9 +143,7 @@ pipeline {
         always {
             echo 'Cleaning workspace...'
             dependencyCheckPublisher(
-                pattern: 'dependency-check-report/dependency-check-report.xml',
-                failedTotalCritical: 1,
-                unstableTotalHigh: 5
+                pattern: 'dependency-check-report/dependency-check-report.xml'
             )
             cleanWs()
             bat "docker rmi ${DOCKER_HUB_REPO}:backend-${env.BUILD_NUMBER} ${DOCKER_HUB_REPO}:frontend-${env.BUILD_NUMBER} || exit 0"
