@@ -58,9 +58,20 @@ pipeline {
 
         stage('OWASP Dependency Check') {
             steps {
-                echo 'Running OWASP Dependency Check via Docker...'
-                bat "if not exist dependency-check-report mkdir dependency-check-report"
-                bat "docker run --rm -v \"%CD%:/src\" -v \"%CD%/dependency-check-report:/report\" owasp/dependency-check --scan /src --format XML --format HTML --out /report --exclude \"**/node_modules/**\" --exclude \"**/__pycache__/**\" --exclude \"**/models/**\" --exclude \"**/data/**\" || exit 0"
+                echo 'Running OWASP Dependency Check via Jenkins Plugin...'
+                dependencyCheck(
+                    additionalArguments: '''
+                        --scan ./
+                        --format XML
+                        --format HTML
+                        --out ./dependency-check-report
+                        --exclude **/node_modules/**
+                        --exclude **/__pycache__/**
+                        --exclude **/models/**
+                        --exclude **/data/**
+                    ''',
+                    odcInstallation: 'OWASP'
+                )
             }
         }
 
