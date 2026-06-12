@@ -56,6 +56,25 @@ pipeline {
             }
         }
 
+        stage('OWASP Dependency Check') {
+            steps {
+                echo 'Running OWASP Dependency Check...'
+                dependencyCheck(
+                    additionalArguments: '''
+                        --scan ./
+                        --format XML
+                        --format HTML
+                        --out ./dependency-check-report
+                        --exclude **/node_modules/**
+                        --exclude **/__pycache__/**
+                        --exclude **/models/**
+                        --exclude **/data/**
+                    ''',
+                    odcInstallation: 'OWASP Dependency-Check'
+                )
+            }
+        }
+
         stage('Build Docker Images') {
             parallel {
                 stage('Build Backend') {
@@ -120,6 +139,11 @@ pipeline {
         }
         always {
             echo 'Cleaning workspace...'
+            dependencyCheckPublisher(
+                pattern: 'dependency-check-report/dependency-check-report.xml',
+                failedTotalCritical: 1,
+                unstableTotalHigh: 5
+            )
             cleanWs()
             bat "docker rmi ${DOCKER_HUB_REPO}:backend-${env.BUILD_NUMBER} ${DOCKER_HUB_REPO}:frontend-${env.BUILD_NUMBER} || exit 0"
         }
