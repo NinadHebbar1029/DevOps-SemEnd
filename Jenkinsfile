@@ -70,7 +70,7 @@ pipeline {
                         --exclude **/models/**
                         --exclude **/data/**
                     ''',
-                    odcInstallation: 'OWASP Dependency-Check'
+                    odcInstallation: 'OWASP'
                 )
             }
         }
